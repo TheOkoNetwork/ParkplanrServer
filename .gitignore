@@ -1,0 +1,8 @@
+config.php
+site
+templates_c
+.ht_firebase_credentials.json
+.ht_google_oauth-credentials.json
+.ht_jwtkey
+.ht_jwtpub
+crons/themeparksJS/diskcache

@@ -1,0 +1,37 @@
+{
+    "name": "okonetwork/parkplanr",
+    "description": "Theme park trip planning, ride counting, digital photo management and more!",
+    "type": "project",
+    "require": {
+        "slim/slim": "^3.9",
+        "oscarotero/psr7-middlewares": "^3.21",
+        "sergeytsalkov/meekrodb": "^2.3",
+        "smarty/smarty": "^3.1",
+        "google/recaptcha": "^1.1",
+        "mailgun/mailgun-php": "^2.4",
+        "php-http/curl-client": "^1.7",
+        "guzzlehttp/psr7": "^1.4",
+        "chriskacerguis/randomstring": "^1.0",
+        "firebase/php-jwt": "^5.0",
+        "aws/aws-sdk-php": "^3.52",
+        "facebook/graph-sdk": "^5.6",
+        "rmccue/requests": "^1.7",
+        "google/apiclient": "^2.2",
+        "paquettg/php-html-parser": "^1.7",
+        "kunalvarma05/dropbox-php-sdk": "^0.2.1",
+        "bugsnag/bugsnag": "^3.0",
+        "kunalvarma05/onedrive-client": "^1.0",
+        "stevenmaguire/oauth2-microsoft": "^2.2",
+        "paragraph1/php-fcm": "dev-master",
+        "kreait/firebase-php": "3.9.3",
+        "google/cloud": "^0.67.0",
+        "campo/random-user-agent": "^1.3"
+    },
+    "license": "ISC",
+    "authors": [
+        {
+            "name": "Gregory Oakley-Stevenson",
+            "email": "gregory@okonetwork.org.uk"
+        }
+    ]
+}

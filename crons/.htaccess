@@ -1,0 +1,7 @@
+#Deny from all
+
+AuthType Basic
+AuthName "ParkPlanr"
+#gregory hotjack17
+AuthUserFile /var/www/parkplanr.okonetwork.org.uk/crons/.htpasswd
+Require valid-user

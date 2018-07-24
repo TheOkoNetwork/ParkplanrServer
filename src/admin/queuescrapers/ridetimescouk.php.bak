@@ -1,0 +1,221 @@
+<?php
+//I contain all the routes/functions used by administrators to manage rides
+
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
+use \Mailgun\Mailgun;
+
+$app->get('/admin/queuescrapers/ridetimescouk/', function (Request $request, Response $response, array $args) {
+	global $smarty;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$rides=DB::query("SELECT queuescrapers_ridetimescouk_rides.ride_id,rides.* FROM rides INNER JOIN queuescrapers_ridetimescouk_rides ON rides.id = queuescrapers_ridetimescouk_rides.ride");
+		$smarty->assign('rides',$rides);
+		$smarty->display('admin/queuescrapers/ridetimescouk/ridetimescouk_rides.tpl');
+	};
+});
+
+$app->get('/admin/queuescrapers/ridetimescouk/{ride_id:[0-9]+}/edit/', function (Request $request, Response $response, array $args) {
+	global $smarty, $config;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$ride=DB::queryFirstRow("SELECT queuescrapers_ridetimescouk_rides.ride_id,rides.* FROM rides INNER JOIN queuescrapers_ridetimescouk_rides ON rides.id = queuescrapers_ridetimescouk_rides.ride WHERE rides.id=%i",$args['ride_id']);
+		if (!$ride) {
+			$smarty->assign('error_code',"RIDE_NOT_FOUND");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+		$smarty->assign('ride',$ride);
+
+		$rides=DB::query("SELECT * FROM rides WHERE park=%i",$config['ridetimescouk_park']);
+		$smarty->assign('rides',$rides);
+
+
+		$parks=DB::query("SELECT * FROM parks");
+		$smarty->assign('parks',$parks);
+		$smarty->display('admin/queuescrapers/ridetimescouk/ridetimescouk_rides_edit.tpl');
+	};
+});
+
+$app->post('/admin/queuescrapers/ridetimescouk/{ride_id:[0-9]+}/edit/', function (Request $request, Response $response, array $args) {
+	global $smarty, $config, $s3client;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$ride=DB::queryFirstRow("SELECT queuescrapers_ridetimescouk_rides.ride_id,rides.* FROM rides INNER JOIN queuescrapers_ridetimescouk_rides ON rides.id = queuescrapers_ridetimescouk_rides.ride WHERE rides.id=%i",$args['ride_id']);
+		if (!$ride) {
+			$smarty->assign('error_code',"RIDE_NOT_FOUND");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+
+		DB::update('queuescrapers_ridetimescouk_rides', array(
+			'ride' => $_POST['ride'],
+			'ride_id' => $_POST['ride_id']
+		),"ride=%i",$ride['id']);
+
+		header("Location: /admin/queuescrapers/ridetimescouk/");
+		die();
+	};
+});
+
+$app->get('/admin/queuescrapers/ridetimescouk/{ride_id:[0-9]+}/delete/', function (Request $request, Response $response, array $args) {
+	global $smarty;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$ride=DB::queryFirstRow("SELECT queuescrapers_ridetimescouk_rides.ride_id,rides.* FROM rides INNER JOIN queuescrapers_ridetimescouk_rides ON rides.id = queuescrapers_ridetimescouk_rides.ride WHERE rides.id=%i",$args['ride_id']);
+		if (!$ride) {
+			$smarty->assign('error_code',"RIDE_NOT_FOUND");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+		$smarty->assign('ride',$ride);
+		$smarty->display('admin/queuescrapers/ridetimescouk/ridetimescouk_rides_delete.tpl');
+	};
+});
+
+$app->post('/admin/queuescrapers/ridetimescouk/{ride_id:[0-9]+}/delete/', function (Request $request, Response $response, array $args) {
+	global $smarty;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$ridetimescouk_ride=DB::queryFirstRow("SELECT queuescrapers_ridetimescouk_rides.id FROM rides INNER JOIN queuescrapers_ridetimescouk_rides ON rides.id = queuescrapers_ridetimescouk_rides.ride WHERE rides.id=%i",$args['ride_id']);
+		if (!$ridetimescouk_ride) {
+			$smarty->assign('error_code',"RIDE_NOT_FOUND");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+
+		DB::delete('queuescrapers_ridetimescouk_rides', "id=%i", $ridetimescouk_ride['id']);
+
+		header("Location: /admin/queuescrapers/ridetimescouk/");
+		die();
+	};
+});
+
+
+$app->get('/admin/queuescrapers/ridetimescouk/add/', function (Request $request, Response $response, array $args) {
+	global $smarty, $config;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$rides=DB::query("SELECT * FROM rides WHERE park=%i",$config['ridetimescouk_park']);
+		$smarty->assign('rides',$rides);
+		$smarty->display('admin/queuescrapers/ridetimescouk/ridetimescouk_rides_add.tpl');
+	};
+});
+
+$app->post('/admin/queuescrapers/ridetimescouk/add/', function (Request $request, Response $response, array $args) {
+	global $smarty, $config;
+
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$ride=DB::queryFirstRow("SELECT * FROM rides WHERE id=%i",$_POST['ride']);
+		if (!$ride) {
+			$smarty->assign('error_code',"RIDE_NOT_FOUND");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+
+		$existing_pairing=DB::queryFirstRow("SELECT * FROM queuescrapers_ridetimescouk_rides WHERE ride=%i OR ride_id=%i",$_POST['ride'],$_POST['ride_id']);
+		if ($existing_pairing) {
+			$smarty->assign('error_code',"EXISTING_PAIRING");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+
+		DB::insert('queuescrapers_ridetimescouk_rides', array(
+			'ride' => $ride['id'],
+			'ride_id' => $_POST['ride_id']
+		));
+
+		header("Location: /admin/queuescrapers/ridetimescouk/");
+		die();
+	};
+});
+
+$app->get('/admin/queuescrapers/ridetimescouk/{ride_id:[0-9]+}/', function (Request $request, Response $response, array $args) {
+	global $smarty;
+	if (!isset($_SESSION['parkplanr']['user'])) {
+		header("Location: /app");
+		die();
+	} {
+		update_user_session();
+		$smarty->assign('user',$_SESSION['parkplanr']['user']);
+
+                web_require_permission("ADMIN");
+                web_require_permission("ADMIN_QUEUESCRAPERS");
+                web_require_permission("ADMIN_QUEUESCRAPERS_RIDETIMESCOUK");
+
+		$ride=DB::queryFirstRow("SELECT * FROM rides WHERE id=%i",$args['ride_id']);
+		if (!$ride) {
+			$smarty->assign('error_code',"RIDE_NOT_FOUND");
+                        $smarty->display('error_authenticated.tpl');
+                        die();
+		};
+		$ride['park']=DB::queryFirstRow("SELECT * FROM parks WHERE id=%i",$ride['park']);
+		$smarty->assign('ride',$ride);
+		$smarty->display('admin/queuescrapers/ridetimescouk/ridetimescouk_rides_view.tpl');
+	};
+});
+?>

@@ -1,0 +1,16 @@
+{
+  "name": "parkplanr_themeparksjs_helper",
+  "version": "1.0.0",
+  "description": "Uses cubehouse/themeparks to import queue times into ParkPlanr",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodejs index.js"
+  },
+  "author": "Gregory Oakley-Stevenson <gregory@okonetwork.org.uk>",
+  "license": "ISC",
+  "dependencies": {
+    "cache-manager-fs-binary": "^1.0.4",
+    "mysql": "^2.15.0",
+    "themeparks": "^4.6.12"
+  }
+}
